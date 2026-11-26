@@ -6,6 +6,12 @@ The ledger is the judge: it decides which alerts count as a saving. A judge that
 
 A test fails if a rule or number changes without a new version, if an earlier version's entry in `rules-lock.json` is changed, or if a version has no entry in this file.
 
+## Release 1.1.0 (not yet released)
+
+- An optional count, off unless you say yes: `sparelimit count on|off|status|show`. After a yes, one download of a one-byte release file once, and at most one a day when a saving is counted. The offer is made once, in an interactive terminal, after the first `sparelimit replay` or `sparelimit week` (or when the ledger shows a counted saving).
+- The release file is now the main way to install.
+- The ledger's rules are unchanged: still rules version 1.
+
 ## Version 1 (written down on 2026-11-26)
 
 The rules the ledger has used since it was built (the first counted alert in the author's log is from 2026-11-05). They were not changed to fit any result. What was written down on 2026-11-26 is the record of them: the numbers that were already in the code, gathered into one table, and a fingerprint of that table.

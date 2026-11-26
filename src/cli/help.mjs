@@ -23,13 +23,14 @@ export const GROUPS = [
   ["Other agents", ["codex", "gemini", "cursor"]],
   ["Accounts, devices and clients", ["accounts", "sync", "clients", "report --client"]],
   ["Share what you found", ["week", "safe-to-share <file>"]],
+  ["The optional count (off unless you say yes)", ["count status", "count show", "count on", "count off"]],
   ["Set up", ["init", "doctor", "rule", "mcp", "status --json"]]
 ];
 
 /** @param {boolean} all */
 export function helpText(all) {
   const w = Math.max(...START.map(([c]) => c.length));
-  const lines = [`${b("sparelimit")} ${VERSION}: don't waste your AI coding limit. Runs on your machine; nothing is sent anywhere.`, "", b("Start here")];
+  const lines = [`${b("sparelimit")} ${VERSION}: don't waste your AI coding limit. Runs on your machine; nothing is sent unless you switch it on.`, "", b("Start here")];
   for (const [c, what] of START) lines.push(`  ${b(c.padEnd(w))}  ${what}`);
   if (all) {
     for (const [title, cmds] of GROUPS) lines.push("", b(title), `  ${cmds.join(" · ")}`);

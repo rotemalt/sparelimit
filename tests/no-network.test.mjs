@@ -24,7 +24,9 @@ test("the only HTTP code in the tool is the local dashboard server, bound to the
   assert.match(fs.readFileSync(path.join(ROOT, "src", "server.mjs"), "utf8"), /listen\([^)]*127\.0\.0\.1/);
 });
 
-test("the only script that fetches is the price-list refresh you run by hand", () => {
+test("the only scripts that fetch are the price-list refresh you run by hand and the optional count (off by default)", () => {
   const scripts = walk(path.join(ROOT, "scripts")).filter((f) => /\bfetch\s*\(/.test(fs.readFileSync(f, "utf8"))).map((f) => path.basename(f));
   assert.deepEqual(scripts, ["build-pricing.mjs"]);
+  // count-ping.mjs takes its fetch as a parameter (so tests can watch it); it is named here so that it stays a visible decision
+  assert.match(fs.readFileSync(path.join(ROOT, "scripts", "count-ping.mjs"), "utf8"), /fetchImpl = fetch/);
 });

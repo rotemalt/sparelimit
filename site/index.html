@@ -6,7 +6,7 @@
 <title>Sparelimit: don't waste your AI coding limit</title>
 <meta name="description" content="A small program that runs on your own computer and warns you before an AI coding conversation grows so big that you waste your limit. Real numbers from the author's own machine, failures included. Open source.">
 <meta property="og:title" content="Sparelimit: don't waste your AI coding limit">
-<meta property="og:description" content="Warns you before you waste your AI coding limit, and counts a saving only when a lower cost was measured after you acted. Open source. Nothing leaves your computer.">
+<meta property="og:description" content="Warns you before you waste your AI coding limit, and counts a saving only when a lower cost was measured after you acted. Open source. Nothing is sent unless you switch it on.">
 <meta name="theme-color" content="#f4f7ff">
 <script>
 /* Bright is the default. The choice is remembered on this device only. */
@@ -91,7 +91,7 @@ footer a{margin-right:6px}
     <section style="padding-top:8px">
       <h1>Don't waste your AI coding limit.</h1>
       <p class="lead">Sparelimit is a small program that runs on your own computer, next to Claude Code. It warns you before a conversation grows so big that you waste your limit, and it counts a saving only when an alert fired, you acted and a lower cost was measured afterwards.</p>
-      <p class="status">Open source, nothing to pay, and nothing leaves your computer.</p>
+      <p class="status">Open source, nothing to pay, and nothing leaves your computer unless you say yes to an optional count.</p>
       <div class="btns">
         <a class="btn" href="#try">Try it in two minutes</a>
         <a class="btn ghost" href="#follow">Follow along</a>
@@ -100,10 +100,8 @@ footer a{margin-right:6px}
 
     <section id="try">
       <h2>Try it in two minutes.</h2>
-      <p>You need Node 20 or newer and nothing else. I have only checked it on a Mac. Four lines:</p>
-<pre><code>git clone https://github.com/rotemalt/sparelimit.git
-cd sparelimit
-./install.sh
+      <p>You need Node 20 or newer and nothing else. I have only checked it on a Mac. Two lines:</p>
+<pre><code>npm install -g https://github.com/rotemalt/sparelimit/releases/download/v1.1.0/sparelimit-1.1.0.tgz
 sparelimit replay --all</code></pre>
       <p>The last line reads the logs your coding agent already wrote on your disk and shows where your limit went, across every past session. There is nothing to set up: no account, no key, no sign-in.</p>
       <p>To be warned while you work, run <code>sparelimit init</code>. It shows what it would change and changes nothing. <code>sparelimit init --apply</code> does it.</p>
@@ -154,7 +152,7 @@ sparelimit replay --all</code></pre>
 
     <section id="faq">
       <h2>Questions.</h2>
-      <details><summary>What leaves my computer?</summary><p>Nothing. Sparelimit reads logs that are already on your disk and writes its own notes to a folder on your disk. This website has no forms and no cookies (see <a href="privacy.html">Privacy</a>).</p></details>
+      <details><summary>What leaves my computer?</summary><p>Nothing, unless you say yes to an optional count, which downloads one tiny file from GitHub. Sparelimit reads logs that are already on your disk and writes its own notes to a folder on your disk. This website has no forms and no cookies (see <a href="privacy.html">Privacy</a>).</p></details>
       <details><summary>Is it safe to let it near my AI tool?</summary><p>Nothing is installed until you run <code>sparelimit init --apply</code>, and <code>sparelimit init</code> first shows what it would change. Sparelimit warns first and only stops at high thresholds. <code>sparelimit allow</code> turns the stops into warnings for a while.</p></details>
       <details><summary>How do I know the numbers are right?</summary><p>Every figure is labelled exact, derived or estimated, and the <a href="methodology.html">methodology page</a> says how each is worked out. I compared the totals with ccusage and CodeBurn on my own sessions: they differ by 0.004% and 0.03%.</p></details>
       <details><summary>How is this different from ccusage or CodeBurn?</summary><p>Both are good and widely used. ccusage reports what you spent. CodeBurn also reports, and it can warn, stop and re-measure after a fix it applies. Sparelimit's difference is narrower than a list of features: it counts a saving only when an alert fired, you acted and a lower cost was measured afterwards, and it publishes the rules it judges by. If you only want a report, you may not need Sparelimit. A dated comparison, with links to what each project says about itself, is in <a href="https://github.com/rotemalt/sparelimit/blob/main/docs/COMPARISON.md">docs/COMPARISON.md</a>.</p></details>

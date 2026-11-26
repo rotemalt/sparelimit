@@ -1,6 +1,6 @@
 # Security
 
-Sparelimit reads the session logs your coding agent writes and runs entirely on your machine. It sends nothing anywhere.
+Sparelimit reads the session logs your coding agent writes and runs entirely on your machine. It sends nothing unless you switch it on: the optional count (`sparelimit count on`) downloads a one-byte file from the release on GitHub.
 
 ## Reporting a vulnerability
 

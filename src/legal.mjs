@@ -14,7 +14,7 @@ export const NOT_AFFILIATED = "Sparelimit is an independent project. It is not a
 /** @type {Doc} */
 export const PRIVACY = {
   title: "Privacy",
-  lead: "Sparelimit runs on your machine and sends nothing anywhere by itself. This page says what it reads, what it writes, what can leave your machine because of something you do, and what the website and the project see.",
+  lead: "Sparelimit runs on your machine and sends nothing unless you switch it on. This page says what it reads, what it writes, what can leave your machine because of something you do, and what the website and the project see.",
   parts: [
     { h: "Who runs this", p: [`${OWNER} publishes Sparelimit. Write to ${CONTACT} about anything on this page.`] },
     { h: "What the tool reads", ul: [
@@ -28,7 +28,12 @@ export const PRIVACY = {
       "Entries in your agent's settings file, only if you run `sparelimit init --apply`. `sparelimit init` first shows them.",
       "Before a handoff, a status file or an export carries your text, well-known shapes of passwords and keys are hidden. A secret with no known shape is not found."
     ] },
-    { h: "What can leave your machine", p: ["Sparelimit itself opens no connection to the internet. These things move information because you chose them:"], ul: [
+    { h: "The optional count", p: [
+      "Off unless you say yes. Sparelimit asks once, after your first replay or weekly summary in a terminal (or when the ledger first shows a counted saving): yes, not now, or never. Not now is asked once more after 30 days. You can change your answer at any time with `sparelimit count on` or `sparelimit count off`.",
+      "If you say yes, Sparelimit downloads one tiny file from GitHub, once when you opt in and at most once a day when it counts a saving, so the author can see from GitHub's own download counter that people use it. Nothing about you or your work is sent to the author: no name, no path, no project, no time of work, and no identifier exists. GitHub sees your address, as it does for any download. The totals are public and approximate. Sparelimit works the same either way.",
+      "`sparelimit count show` prints the two file addresses. Your answer is kept in `~/.sparelimit/count.json`."
+    ] },
+    { h: "What can leave your machine", p: ["Apart from the optional count, Sparelimit itself opens no connection to the internet. These things move information because you chose them:"], ul: [
       "Warnings that Sparelimit hands to your AI tool, answers it gives that tool through `sparelimit mcp`, and a handoff you paste: they become part of your conversation, and go to that tool's provider under its terms.",
       "`sparelimit sync` writes a file of daily totals into a folder you choose. If another service copies that folder, that service moves the file. It holds totals, model names, account keys and the device name, never prompts or paths.",
       "`npm run update-pricing`, a script you run by hand from the source, downloads a public price list from GitHub.",

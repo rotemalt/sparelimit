@@ -1,5 +1,6 @@
 /** The commands that read your history: replay, coach, digest, ledger, timeline and the rest. Split out of sparelimit.mjs (A11). */
 import { shareCheck } from "./share.mjs";
+import { afterReport } from "../count.mjs";
 import { shareDay, shareLedger, shareWeek } from "../shareview.mjs";
 import { breakdownEquation, breakdownFromTotals } from "../breakdown.mjs";
 import { noLogsMessage } from "../emptystate.mjs";
@@ -85,6 +86,7 @@ export const commands = {
       if (r.firstBlock) console.log(`  After the first stop: ${r.exposure.afterFirstStopMinutes} more active min and ${usd(r.exposure.afterFirstStopUSD)} more [derived]`);
     }
     console.log("");
+    if (results.length) await afterReport({ entries: [], ran: true });
     return;
   },
   "coach": async (args) => {
@@ -300,6 +302,7 @@ export const commands = {
     const out = args.includes("--json") ? JSON.stringify(week, null, 2) : renderWeekText(week);
     console.log(out);
     if (share) shareCheck(out, "this summary");
+    await afterReport({ entries: r.ledger.entries, ran: true, mayAsk: !share && !args.includes("--json") });
     return;
   },
   "ledger": async (args) => {
@@ -315,6 +318,7 @@ export const commands = {
       const out = JSON.stringify(share ? shareLedger(l) : l, null, 2);
       console.log(out);
       if (share) shareCheck(out, "this ledger");
+      await afterReport({ entries: l.entries, mayAsk: false });
       return;
     }
     /** @type {string[]} */
@@ -345,6 +349,7 @@ export const commands = {
     }
     print(`\n${l.note}\n${METHOD_FOOTER}\n`);
     if (share) shareCheck(lines.join("\n"), "this ledger");
+    await afterReport({ entries: l.entries, mayAsk: !share });
     return;
   },
   "method": async (args) => {

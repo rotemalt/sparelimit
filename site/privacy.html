@@ -16,7 +16,7 @@ p,li{color:var(--muted)} p{margin:0 0 12px} li{margin:0 0 6px} code{font:15px ui
 <a class="logo" href="./">sparelimit.</a>
 <h1>Privacy</h1>
 <p>Last changed 2026-11-26.</p>
-<p>Sparelimit runs on your machine and sends nothing anywhere by itself. This page says what it reads, what it writes, what can leave your machine because of something you do, and what the website and the project see.</p>
+<p>Sparelimit runs on your machine and sends nothing unless you switch it on. This page says what it reads, what it writes, what can leave your machine because of something you do, and what the website and the project see.</p>
 <h2>Who runs this</h2>
 <p>Rotem Alt publishes Sparelimit. Write to <a href="mailto:rotem.alt.verarail@gmail.com">rotem.alt.verarail@gmail.com</a> about anything on this page.</p>
 <h2>What the tool reads</h2>
@@ -34,8 +34,12 @@ p,li{color:var(--muted)} p{margin:0 0 12px} li{margin:0 0 6px} code{font:15px ui
 <li>Entries in your agent's settings file, only if you run <code>sparelimit init --apply</code>. <code>sparelimit init</code> first shows them.</li>
 <li>Before a handoff, a status file or an export carries your text, well-known shapes of passwords and keys are hidden. A secret with no known shape is not found.</li>
 </ul>
+<h2>The optional count</h2>
+<p>Off unless you say yes. Sparelimit asks once, after your first replay or weekly summary in a terminal (or when the ledger first shows a counted saving): yes, not now, or never. Not now is asked once more after 30 days. You can change your answer at any time with <code>sparelimit count on</code> or <code>sparelimit count off</code>.</p>
+<p>If you say yes, Sparelimit downloads one tiny file from GitHub, once when you opt in and at most once a day when it counts a saving, so the author can see from GitHub's own download counter that people use it. Nothing about you or your work is sent to the author: no name, no path, no project, no time of work, and no identifier exists. GitHub sees your address, as it does for any download. The totals are public and approximate. Sparelimit works the same either way.</p>
+<p><code>sparelimit count show</code> prints the two file addresses. Your answer is kept in <code>~/.sparelimit/count.json</code>.</p>
 <h2>What can leave your machine</h2>
-<p>Sparelimit itself opens no connection to the internet. These things move information because you chose them:</p>
+<p>Apart from the optional count, Sparelimit itself opens no connection to the internet. These things move information because you chose them:</p>
 <ul>
 <li>Warnings that Sparelimit hands to your AI tool, answers it gives that tool through <code>sparelimit mcp</code>, and a handoff you paste: they become part of your conversation, and go to that tool's provider under its terms.</li>
 <li><code>sparelimit sync</code> writes a file of daily totals into a folder you choose. If another service copies that folder, that service moves the file. It holds totals, model names, account keys and the device name, never prompts or paths.</li>

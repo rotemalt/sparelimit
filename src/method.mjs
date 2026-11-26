@@ -52,7 +52,7 @@ export const METHOD = {
       blocks: [
         { ul: [
           "**Dollars are API-equivalent at list price.** They are what the same tokens would cost at the public API prices, not what your plan billed you. On a subscription they show size and share, not an invoice.",
-          "**The tool runs on your machine.** Sparelimit reads the session logs your coding agent already writes and sends nothing anywhere. Currently only Claude Code logs are read fully; Antigravity is partly supported.",
+          "**The tool runs on your machine.** Sparelimit reads the session logs your coding agent already writes and sends nothing unless you switch it on (the optional count, `sparelimit count`). Currently only Claude Code logs are read fully; Antigravity is partly supported.",
           "**Estimates overlap.** The savings listed for different habits are different views of the same spend. Adding them up counts some money twice, so Sparelimit never does."
         ] }
       ]

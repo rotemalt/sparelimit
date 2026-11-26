@@ -5,18 +5,31 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Zero Dependencies](https://img.shields.io/badge/Dependencies-0-brightgreen.svg)](#)
 
-Runs on your machine. No account, no API key, and nothing is sent anywhere. Nothing to pay: there are no paid features. Claude Code logs are read fully, including the sessions Claude Desktop runs in agent mode (Cowork). Codex CLI sessions are read for cost and plan limits (`sparelimit codex`) and Gemini CLI sessions for cost (`sparelimit gemini`); the coaching views are Claude-only. Antigravity is partly supported. Cursor chats are read for tokens only, with no dollars (`sparelimit cursor`).
+Runs on your machine. No account, no API key, and nothing is sent unless you switch it on: [the optional count](#the-optional-count) is off until you say yes. Nothing to pay: there are no paid features. Claude Code logs are read fully, including the sessions Claude Desktop runs in agent mode (Cowork). Codex CLI sessions are read for cost and plan limits (`sparelimit codex`) and Gemini CLI sessions for cost (`sparelimit gemini`); the coaching views are Claude-only. Antigravity is partly supported. Cursor chats are read for tokens only, with no dollars (`sparelimit cursor`).
 
 ## Try it in two minutes
 
 ```bash
-git clone https://github.com/rotemalt/sparelimit.git
-cd sparelimit
-./install.sh        # puts `sparelimit` on your PATH; needs Node 20 or newer, nothing else
+npm install -g https://github.com/rotemalt/sparelimit/releases/download/v1.1.0/sparelimit-1.1.0.tgz
 sparelimit replay --all   # where your limit went: reads the logs you already have, nothing to set up
 ```
 
+That is the release file, and the main way to install. It needs Node 20 or newer, which brings `npm`, and nothing else. If you want the source instead, see [Install](#install).
+
 On Windows, or if you would rather not install anything, run it from the folder with `node sparelimit.mjs replay --all`. It reads `.claude/projects` in your home folder, and if you have not used Claude Code yet it says so and what to do next.
+
+## The optional count
+
+Off unless you say yes. After your first `sparelimit replay` or `sparelimit week` in a terminal (or when `sparelimit ledger` first shows a counted saving), Sparelimit asks once: yes, not now, or never. "Not now" is asked once more after 30 days. "Never" is never asked again. Piped output, `--json`, `--share`, CI and hooks are never asked.
+
+If you say yes, Sparelimit downloads one tiny file from GitHub, once when you opt in and at most once a day when it counts a saving, so the author can see from GitHub's own download counter that people use it. Nothing about you or your work is sent to the author: no name, no path, no project, no time of work, and no identifier exists. GitHub sees your address, as it does for any download. The totals are public and approximate: anyone can read them, they arrive late, they can be lower than the number of downloads, and they are not a number of people. Sparelimit works the same either way.
+
+```bash
+sparelimit count status   # on or off, and what has been requested
+sparelimit count show     # the two addresses that would be requested; requests nothing
+sparelimit count on
+sparelimit count off
+```
 
 ## Start here
 
@@ -86,6 +99,14 @@ The 11% is a model, not a result: it assumes you would have reset at 60%, that t
 ## Install
 
 Node 20 or newer (the test suite passes on 20, 22 and 26 here, and CI runs 20, 22 and 24; Node 18 is untested), no packages to install.
+
+From the release file (the main way):
+
+```bash
+npm install -g https://github.com/rotemalt/sparelimit/releases/download/v1.1.0/sparelimit-1.1.0.tgz
+```
+
+From the source:
 
 ```bash
 git clone https://github.com/rotemalt/sparelimit.git

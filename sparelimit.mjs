@@ -49,6 +49,7 @@ import { commands as usageCommands } from "./src/cli/usage.mjs";
 import { commands as clientCommands } from "./src/cli/clients.mjs";
 import { commands as helpCommands, helpText } from "./src/cli/help.mjs";
 import { commands as shareCommands } from "./src/cli/share.mjs";
+import { commands as countCommands } from "./src/cli/count.mjs";
 
 // The functions that used to live here are re-exported so `import ... from "./sparelimit.mjs"` keeps working (tests, tools).
 export { VERSION, STATE_DIR } from "./src/constants.mjs";
@@ -63,7 +64,7 @@ const args = process.argv.slice(2);
 const command = args[0] || "hud";
 
 // The commands that read no transcript live in src/cli/*.mjs, one handler each.
-const handler = { ...sessionCommands, ...planCommands, ...analysisCommands, ...usageCommands, ...clientCommands, ...shareCommands, ...helpCommands }[command];
+const handler = { ...sessionCommands, ...planCommands, ...analysisCommands, ...usageCommands, ...clientCommands, ...shareCommands, ...countCommands, ...helpCommands }[command];
 if (handler) {
   await handler(args);
   return;

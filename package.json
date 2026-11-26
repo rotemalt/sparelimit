@@ -1,6 +1,6 @@
 {
   "name": "sparelimit",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Don't waste your AI coding limit: see where it went, know when to start fresh, and count only the savings that were measured. Local, zero dependencies.",
   "type": "module",
   "main": "sparelimit.mjs",
@@ -19,7 +19,8 @@
     "typecheck": "node scripts/typecheck.mjs",
     "go-out-check": "node scripts/go-out-check.mjs",
     "friday": "node scripts/friday.mjs",
-    "snapshot": "node scripts/snapshot.mjs"
+    "snapshot": "node scripts/snapshot.mjs",
+    "release-files": "node scripts/build-release.mjs"
   },
   "files": [
     "sparelimit.mjs",
@@ -36,7 +37,8 @@
     "docs/SCREENSHOTS.md",
     "docs/CHANGELOG.md",
     "docs/PRIVACY.md",
-    "docs/TERMS.md"
+    "docs/TERMS.md",
+    "scripts/count-ping.mjs"
   ],
   "keywords": [
     "ai",
