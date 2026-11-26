@@ -1,0 +1,51 @@
+{
+  "note": "One entry per rules version. An entry is never edited after it is added; a new version gets a new entry.",
+  "versions": {
+    "1": {
+      "sha256": "b44d50f139cb078737c4a9f73693a7827ebea9c8d68f0822da4396acbf8a534b",
+      "frozen": "2026-11-26",
+      "thresholds": {
+        "clusterGapMin": 30,
+        "resetDropRatio": 0.65,
+        "resetWithinResponses": 15,
+        "minPreResponses": 5,
+        "preResponses": 10,
+        "postResponses": 30,
+        "minPost": 10,
+        "restartWithinMin": 60,
+        "restartStartRatio": 0.5,
+        "pendingHours": 3,
+        "coldRestartWithinMin": 45,
+        "coldCheckMin": 5,
+        "coldPendingHours": 1,
+        "coldFirstResponses": 3,
+        "rateMinutes": 30,
+        "rateSlowdown": 0.7,
+        "rateMinBeforeUSD": 0.5,
+        "rateMinResponses": 5
+      },
+      "families": [
+        {
+          "family": "cold",
+          "kind": "coach",
+          "rule": "cache.cold"
+        },
+        {
+          "family": "reset",
+          "kind": "coach",
+          "rule": "context.reset"
+        },
+        {
+          "family": "reset",
+          "kind": "finding",
+          "rule": "context.window"
+        },
+        {
+          "family": "quota",
+          "kind": "finding",
+          "rule": "quota.*"
+        }
+      ]
+    }
+  }
+}

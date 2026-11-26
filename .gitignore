@@ -1,0 +1,20 @@
+# Runtime state and anything derived from user transcripts (contains prompts and local paths)
+live-session.js
+live-session.json
+.sparelimit-status.json
+.sparelimit-handoff.md
+.sparelimit-freeze.json
+.sparelimit-muzzle.sh
+.sparelimit/
+node_modules/
+.DS_Store
+
+# the license signing key is the seller's secret: never commit it
+license-private.pem
+*.private.pem
+
+# built binaries
+build/
+
+# local assistant settings
+.claude/

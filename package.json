@@ -1,0 +1,57 @@
+{
+  "name": "sparelimit",
+  "version": "1.0.0",
+  "description": "Don't waste your AI coding limit: see where it went, know when to start fresh, and count only the savings that were measured. Local, zero dependencies.",
+  "type": "module",
+  "main": "sparelimit.mjs",
+  "bin": {
+    "sparelimit": "./sparelimit.mjs"
+  },
+  "scripts": {
+    "start": "node sparelimit.mjs serve",
+    "watch": "node sparelimit.mjs watch",
+    "hud": "node sparelimit.mjs",
+    "mcp": "node sparelimit.mjs mcp",
+    "reset": "node sparelimit.mjs reset",
+    "bench": "node sparelimit.mjs benchmark",
+    "test": "node scripts/run-tests.mjs",
+    "update-pricing": "node scripts/build-pricing.mjs https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json",
+    "typecheck": "node scripts/typecheck.mjs",
+    "go-out-check": "node scripts/go-out-check.mjs",
+    "friday": "node scripts/friday.mjs",
+    "snapshot": "node scripts/snapshot.mjs"
+  },
+  "files": [
+    "sparelimit.mjs",
+    "src",
+    "data",
+    "scripts/build-pricing.mjs",
+    "index.html",
+    "styles.css",
+    "app.js",
+    "install.sh",
+    "README.md",
+    "THIRD_PARTY_NOTICES.md",
+    "docs/RULES.md",
+    "docs/SCREENSHOTS.md",
+    "docs/CHANGELOG.md",
+    "docs/PRIVACY.md",
+    "docs/TERMS.md"
+  ],
+  "keywords": [
+    "ai",
+    "claude-code",
+    "cursor",
+    "antigravity",
+    "mcp",
+    "token-optimization",
+    "telemetry",
+    "developer-tools",
+    "prompt-engineering"
+  ],
+  "author": "Rotem Alt",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

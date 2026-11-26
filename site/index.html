@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sparelimit: don't waste your AI coding limit</title>
+<meta name="description" content="A small program that runs on your own computer and warns you before an AI coding conversation grows so big that you waste your limit. Real numbers from the author's own machine, failures included. Open source.">
+<meta property="og:title" content="Sparelimit: don't waste your AI coding limit">
+<meta property="og:description" content="Warns you before you waste your AI coding limit, and counts a saving only when a lower cost was measured after you acted. Open source. Nothing leaves your computer.">
+<meta name="theme-color" content="#f4f7ff">
+<script>
+/* Bright is the default. The choice is remembered on this device only. */
+try{document.documentElement.dataset.theme=localStorage.getItem('sparelimit-theme')==='dark'?'dark':'light'}catch(e){}
+</script>
+<style>
+:root,[data-theme="light"]{
+  color-scheme:light;
+  --paper:#f4f7ff; --surface:#ffffff; --ink:#0a1230; --muted:#4a5878; --line:#d5dcf2;
+  --blue:#1f4bff; --on-blue:#ffffff; --signal:#c2340f; --ok:#0a7a50; --soft:#e4eaff;
+  --chip-derived:#0a7a50; --chip-estimated:#8a5a00; --chip-exact:#1f4bff;
+}
+[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#0a111c; --surface:#101a2a; --ink:#e8eef7; --muted:#a3b2c6; --line:#243247;
+  --blue:#7b97ff; --on-blue:#0a111c; --signal:#ff7459; --ok:#4fd1a1; --soft:#0f1a33;
+  --chip-derived:#4fd1a1; --chip-estimated:#ffc15a; --chip-exact:#7b97ff;
+}
+:root{
+  --display:ui-serif,"New York","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --text:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.6 var(--text);-webkit-font-smoothing:antialiased}
+a{color:var(--blue)}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:4px}
+.wrap{max-width:760px;margin:0 auto;padding:0 20px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 0}
+.logo{font:700 28px/1 var(--display);letter-spacing:-.03em;color:var(--ink);text-decoration:none}
+.logo i{font-style:normal;color:var(--signal)}
+.theme{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font:600 14px var(--text);cursor:pointer;min-height:40px}
+h1{font:700 clamp(36px,9vw,64px)/1.03 var(--display);letter-spacing:-.03em;margin:28px 0 18px;text-wrap:balance}
+h2{font:700 clamp(28px,6vw,40px)/1.1 var(--display);letter-spacing:-.025em;margin:0 0 14px;text-wrap:balance}
+h3{font:700 19px/1.3 var(--text);margin:26px 0 8px}
+section{padding:56px 0 0}
+p{margin:0 0 14px}
+.lead{font-size:20px;line-height:1.5;max-width:34em}
+.muted{color:var(--muted)}
+.status{display:inline-block;background:var(--soft);border-radius:10px;padding:10px 14px;font-weight:600;margin:6px 0 20px}
+.btns{display:flex;flex-wrap:wrap;gap:12px;margin:8px 0 0}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:12px;border:2px solid var(--blue);background:var(--blue);color:var(--on-blue);font:700 17px var(--text);text-decoration:none;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--blue)}
+pre{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0;font:15px/1.7 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere}
+code{font-family:var(--mono);font-size:.92em;background:var(--soft);border-radius:5px;padding:1px 5px;overflow-wrap:anywhere}
+pre code{background:none;padding:0;font-size:inherit}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 18px 8px;margin:16px 0}
+.asof{color:var(--muted);font-size:15px}
+table.figures{width:100%;border-collapse:collapse;margin:10px 0 6px;font-size:16px}
+table.figures th,table.figures td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.figures thead th{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+table.figures tbody th{font-weight:500}
+table.figures td.num{font:700 17px var(--mono);white-space:nowrap}
+.chip{display:inline-block;border:1.5px solid currentColor;border-radius:999px;padding:1px 9px;font:700 13px var(--text)}
+.chip.derived{color:var(--chip-derived)}.chip.estimated{color:var(--chip-estimated)}.chip.exact{color:var(--chip-exact)}
+@media(max-width:520px){
+  table.figures,table.figures tbody,table.figures tr,table.figures th,table.figures td{display:block}
+  table.figures thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  table.figures tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  table.figures th,table.figures td{border:0;padding:2px 0}
+  table.figures td.num{font-size:20px}
+}
+ul.fails{padding-left:20px;margin:0 0 14px}ul.fails li{margin:6px 0}
+.truth{border-left:4px solid var(--signal);padding:4px 0 4px 16px;margin:20px 0;font-size:19px;font-weight:600}
+details{border-top:1px solid var(--line);padding:12px 0}details:last-of-type{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;font-weight:700;min-height:32px}
+details p{margin:10px 0 0;color:var(--muted)}
+.follow{list-style:none;padding:0;margin:14px 0 0}.follow li{margin:0 0 10px}
+footer{margin-top:72px;padding:28px 0 56px;border-top:1px solid var(--line);color:var(--muted);font-size:15px}
+footer a{margin-right:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="./">sparelimit<i>.</i></a>
+    <button class="theme" id="theme" type="button" aria-pressed="false" aria-label="Switch to dark theme">Dark</button>
+  </header>
+
+  <main>
+    <section style="padding-top:8px">
+      <h1>Don't waste your AI coding limit.</h1>
+      <p class="lead">Sparelimit is a small program that runs on your own computer, next to Claude Code. It warns you before a conversation grows so big that you waste your limit, and it counts a saving only when an alert fired, you acted and a lower cost was measured afterwards.</p>
+      <p class="status">Open source, nothing to pay, and nothing leaves your computer.</p>
+      <div class="btns">
+        <a class="btn" href="#try">Try it in two minutes</a>
+        <a class="btn ghost" href="#follow">Follow along</a>
+      </div>
+    </section>
+
+    <section id="try">
+      <h2>Try it in two minutes.</h2>
+      <p>You need Node 20 or newer and nothing else. I have only checked it on a Mac. Four lines:</p>
+<pre><code>git clone https://github.com/rotemalt/sparelimit.git
+cd sparelimit
+./install.sh
+sparelimit replay --all</code></pre>
+      <p>The last line reads the logs your coding agent already wrote on your disk and shows where your limit went, across every past session. There is nothing to set up: no account, no key, no sign-in.</p>
+      <p>To be warned while you work, run <code>sparelimit init</code>. It shows what it would change and changes nothing. <code>sparelimit init --apply</code> does it.</p>
+      <p class="muted">Sparelimit reads Claude Code fully. It reads Codex and Gemini CLI for cost only, and Cursor for tokens only. <a href="https://github.com/rotemalt/sparelimit#which-agents-it-reads">What each one gives you</a>.</p>
+    </section>
+
+    <section id="numbers">
+      <h2>What it did on my own machine.</h2>
+      <p>Yours will differ. Each number comes from a command you can run on your own logs (<code>sparelimit week --days=0</code>).</p>
+<div class="card" id="numbers-card">
+<!-- numbers:start -->
+      <p class="asof">The author's own numbers, with Claude Code: one machine, one person, first weeks of use. Everything on that machine up to 2026-11-26. Not a forecast, and not from other people.</p>
+      <table class="figures">
+        <thead><tr><th scope="col">What</th><th scope="col">Number</th><th scope="col">How sure</th></tr></thead>
+        <tbody>
+        <tr><th scope="row">Alerts that fired</th><td class="num" data-n="alerts">96</td><td><span class="chip derived">derived</span></td></tr>
+        <tr><th scope="row">Alerts acted on</th><td class="num" data-n="acted-on">3</td><td><span class="chip derived">derived</span></td></tr>
+        <tr><th scope="row">Alerts ignored</th><td class="num" data-n="ignored">72</td><td><span class="chip derived">derived</span></td></tr>
+        <tr><th scope="row">Acted on, out of the alerts where acting or not could be told</th><td class="num" data-n="acted-on-rate">4%</td><td><span class="chip derived">derived</span></td></tr>
+        <tr><th scope="row">Counted saving</th><td class="num" data-n="counted-saving">$19.56</td><td><span class="chip estimated">estimated</span></td></tr>
+        <tr><th scope="row">What the ignored alerts predicted, which was not saved</th><td class="num" data-n="ignored-predicted">$147.59</td><td><span class="chip estimated">estimated</span></td></tr>
+        </tbody>
+      </table>
+      <p class="asof">Rules version <b data-n="rules-version">1</b>: every rule and threshold the ledger uses is in <a href="https://github.com/rotemalt/sparelimit/blob/main/docs/RULES.md">docs/RULES.md</a>.</p>
+      <p class="equation">Where the 96 alerts went: <b data-n="breakdown">3 counted + 72 ignored + 18 unsettled + 2 pending + 1 work stopped = 96</b> <span class="chip derived">derived</span></p>
+      <h3>Not counted, and why</h3>
+      <ul class="fails">
+        <li><b data-n="not-ignored">72</b> ignored: you did not act on the alert, so nothing was saved</li>
+        <li><b data-n="not-stopped">1</b> stopped: work stopped after the alert; that is not counted as an effect of it</li>
+        <li><b data-n="not-no-data">18</b> no-data: the logs could not settle it (too little spending to compare, or the alert did not apply)</li>
+        <li><b data-n="not-pending">2</b> pending: too recent to judge: the window after the alert is not over</li>
+      </ul>
+      <p class="asof">Complaints received: <b data-n="complaints">0</b> (GitHub issues titled &quot;Complaint:&quot;, counted before the repository was public, when none could be filed yet), as of 2026-11-26.</p>
+<!-- numbers:end -->
+</div>
+      <p class="truth">I ignored most of the alerts. Sparelimit can only save you something when you act on it, and most of the time I did not. That is the real number, and it is why the saving is small.</p>
+      <p class="truth">Since then I added one short command, <code>sparelimit act</code>: it writes a handoff note and copies a prompt for a fresh conversation, so acting on a warning takes less work. I have not measured whether it changes how often I act.</p>
+      <p class="muted">The counted saving is labelled <b>estimated</b> because it compares two stretches of work that may not be alike; the ledger says so itself. Dollars are at list price: on a subscription, a saving is limit you kept, not money back. <a href="methodology.html">How every number is worked out</a>. A counted saving is not proof that an alert caused it, and the rules are the author's own choices: <a href="methodology.html#does-not-claim">what Sparelimit does not claim</a>.</p>
+      <h3>Where my limit went, from 250 sessions read on 2026-11-26</h3>
+      <table class="figures">
+        <thead><tr><th scope="col">What</th><th scope="col">Number</th><th scope="col">How sure</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Spend that was re-sending the whole conversation on every message (<code>sparelimit replay --all</code>)</th><td class="num">58%</td><td><span class="chip derived">derived</span></td></tr>
+          <tr><th scope="row">What starting fresh at 60% of the window would have saved: a model, not a result (range 8 to 13%)</th><td class="num">about 11%</td><td><span class="chip estimated">estimated</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="faq">
+      <h2>Questions.</h2>
+      <details><summary>What leaves my computer?</summary><p>Nothing. Sparelimit reads logs that are already on your disk and writes its own notes to a folder on your disk. This website has no forms and no cookies (see <a href="privacy.html">Privacy</a>).</p></details>
+      <details><summary>Is it safe to let it near my AI tool?</summary><p>Nothing is installed until you run <code>sparelimit init --apply</code>, and <code>sparelimit init</code> first shows what it would change. Sparelimit warns first and only stops at high thresholds. <code>sparelimit allow</code> turns the stops into warnings for a while.</p></details>
+      <details><summary>How do I know the numbers are right?</summary><p>Every figure is labelled exact, derived or estimated, and the <a href="methodology.html">methodology page</a> says how each is worked out. I compared the totals with ccusage and CodeBurn on my own sessions: they differ by 0.004% and 0.03%.</p></details>
+      <details><summary>How is this different from ccusage or CodeBurn?</summary><p>Both are good and widely used. ccusage reports what you spent. CodeBurn also reports, and it can warn, stop and re-measure after a fix it applies. Sparelimit's difference is narrower than a list of features: it counts a saving only when an alert fired, you acted and a lower cost was measured afterwards, and it publishes the rules it judges by. If you only want a report, you may not need Sparelimit. A dated comparison, with links to what each project says about itself, is in <a href="https://github.com/rotemalt/sparelimit/blob/main/docs/COMPARISON.md">docs/COMPARISON.md</a>.</p></details>
+      <details><summary>Do I need to be technical?</summary><p>Today Sparelimit is a command-line program. If you use Claude Code, you can use it.</p></details>
+    </section>
+
+    <section id="follow">
+      <h2>Follow along.</h2>
+      <p>There is no mailing list. Choose where you want to hear about a new version.</p>
+      <ul class="follow">
+        <li><a href="https://github.com/rotemalt/sparelimit/releases">Watch releases on GitHub</a>: choose Watch, then Custom, then Releases.</li>
+        <li><a href="https://github.com/rotemalt/sparelimit/discussions">Discussions</a>: ask a question or show what you found.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <a class="logo" href="./" style="font-size:22px">sparelimit<i>.</i></a>
+    <p style="margin-top:10px">Made by Rotem Alt. Open source (MIT). <a href="https://github.com/rotemalt/sparelimit">Code</a> &middot; <a href="methodology.html">How the numbers are computed</a> &middot; <a href="privacy.html">Privacy</a> &middot; <a href="terms.html">Terms</a> &middot; <a href="numbers.json">The numbers (JSON)</a></p>
+    <p style="font-size:13px">Sparelimit is an independent project. It is not affiliated with, endorsed by or sponsored by Anthropic, OpenAI, Google, Anysphere (Cursor) or the makers of any other tool it names. Claude, Claude Code, Codex, Gemini, Cursor and other names are trademarks of their owners, and are used only to say what Sparelimit reads or is compared with.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var root=document.documentElement,tbtn=document.getElementById('theme');
+  function syncTheme(){var dark=root.dataset.theme==='dark';tbtn.setAttribute('aria-pressed',dark);tbtn.setAttribute('aria-label',dark?'Switch to bright theme':'Switch to dark theme');tbtn.textContent=dark?'Bright':'Dark';
+    var m=document.querySelector('meta[name=theme-color]');if(m)m.content=dark?'#0a111c':'#f4f7ff'}
+  tbtn.addEventListener('click',function(){var next=root.dataset.theme==='dark'?'light':'dark';root.dataset.theme=next;try{localStorage.setItem('sparelimit-theme',next)}catch(e){}syncTheme()});
+  syncTheme();
+})();
+</script>
+</body>
+</html>

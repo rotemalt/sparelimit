@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="Where my AI coding spend goes: 0 percent re-sending the conversation">
+<style>text{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;fill:#e8eef7}.h{font-size:44px;font-weight:700}.sub{font-size:22px;fill:#93a3b8}.cap{font-size:18px;fill:#93a3b8}.pc{font-size:38px;font-weight:700;fill:#7b97ff}.ch{font-size:22px}.sec{font-size:16px;letter-spacing:.12em;fill:#93a3b8}</style>
+<rect width="1200" height="630" fill="#0a111c"/>
+<text x="60" y="84" class="h">Where my AI coding spend goes</text>
+<text x="60" y="124" class="sub">$0 over 1 sessions and 1 weeks</text>
+<text x="60" y="180" class="sec">THE SPLIT</text>
+<rect x="60" y="196" width="0" height="34" fill="#7b97ff"/><rect x="60" y="196" width="1080" height="34" fill="#4cc9f0"/><rect x="1140" y="196" width="0" height="34" fill="#6ee7a0"/><g transform="translate(60 262)"><rect width="16" height="16" y="-13" fill="#7b97ff"/><text x="26" class="cap">0% Re-sending the conversation</text></g><g transform="translate(430 262)"><rect width="16" height="16" y="-13" fill="#4cc9f0"/><text x="26" class="cap">100% Adding new content to it</text></g><g transform="translate(800 262)"><rect width="16" height="16" y="-13" fill="#6ee7a0"/><text x="26" class="cap">0% What the AI writes</text></g>
+<text x="60" y="342" class="sec">WHAT TO CHANGE, LARGEST FIRST</text>
+
+<line x1="60" x2="1140" y1="552" y2="552" stroke="#243247"/>
+<text x="60" y="582" class="cap">Read from my own session logs by Sparelimit on 2026-11-26.</text>
+<text x="60" y="608" class="cap">Dollars are API-equivalent at list price. &#39;Could save&#39; rows are modelled and overlap; &#39;at stake&#39; rows are spend in an area, not a saving.</text>
+</svg>

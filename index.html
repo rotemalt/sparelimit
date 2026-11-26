@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- MANDATORY: Declare support for both light and dark themes -->
+  <meta name="color-scheme" content="light dark">
+  <title>Sparelimit: your AI coding limit, live</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-wrap">
+    <!-- Top Bar -->
+    <header class="top-nav">
+      <div class="nav-brand">
+        <span class="live-pulse" id="livePulse" title="Live connection active"></span>
+        <div class="brand-titles">
+          <h1>sparelimit<i>.</i></h1>
+          <span class="sub-brand">Your AI coding limit, live. Everything here stays on this computer.</span>
+        </div>
+      </div>
+      <div class="nav-controls">
+        <div class="model-picker-wrap">
+          <label for="modelSelect">Prices:</label>
+          <select id="modelSelect">
+            <option value="" selected>Actual model per message (recommended)</option>
+            <option value="claude-fable-5-1">What-if: Claude Fable 5.1 ($10 / $0.25 / $50)</option>
+            <option value="claude-opus-5-5">What-if: Claude Opus 5.5 ($4 / $0.20 / $20)</option>
+            <option value="claude-sonnet-5-5">What-if: Claude Sonnet 5.5 ($2 / $0.10 / $10)</option>
+            <option value="claude-haiku-5-5">What-if: Claude Haiku 5.5 ($0.10 / $0.01 / $0.50)</option>
+            <option value="gemini-3.8-flash">What-if: Gemini 3.8 Flash ($0.75 / $0.075 / $3.75)</option>
+            <option value="gpt-5.2-codex">What-if: GPT-5.2 Codex ($1.75 / $0.175 / $14)</option>
+          </select>
+        </div>
+        <div class="session-pill" id="sessionPill">Reading local session...</div>
+      </div>
+    </header>
+
+    <!-- PRE-ACTION ALERT BANNER (High Visibility) -->
+    <section class="alert-banner" id="preActionBanner" role="alert">
+      <div class="alert-icon" id="alertIcon">🚨</div>
+      <div class="alert-content">
+        <strong id="alertHeading">Checking this session</strong>
+        <p id="alertBody">Reading the active session...</p>
+      </div>
+      <div class="alert-actions">
+        <button type="button" class="btn-danger" id="quickResetBtn">Start fresh now</button>
+      </div>
+    </section>
+
+    <!-- OVERVIEW: plan limits (estimated), spend history (derived), what Sparelimit said and what came of it -->
+    <section class="overview" id="overview" aria-label="Plan limits and spend">
+      <div class="gauge-grid">
+        <article class="panel-card gauge-card" id="gauge5">
+          <div class="panel-header"><h2>5-hour limit</h2><span class="tag-badge warn">ESTIMATED</span></div>
+          <div class="gauge-big" id="g5pct">-</div>
+          <div class="gauge-bar" role="img" aria-label="5-hour limit used"><div class="gauge-fill" id="g5fill"></div></div>
+          <p class="panel-intro" id="g5text">Reading your logs...</p>
+        </article>
+        <article class="panel-card gauge-card" id="gaugeW">
+          <div class="panel-header"><h2>Weekly limit</h2><span class="tag-badge warn">ESTIMATED</span></div>
+          <div class="gauge-big" id="gWpct">-</div>
+          <div class="gauge-bar" role="img" aria-label="Weekly limit used"><div class="gauge-fill" id="gWfill"></div></div>
+          <p class="panel-intro" id="gWtext">Reading your logs...</p>
+        </article>
+        <article class="panel-card gauge-card" id="rateCard">
+          <div class="panel-header"><h2>Spend now</h2><span class="tag-badge good">DERIVED</span></div>
+          <div class="gauge-big" id="rateBig">-</div>
+          <p class="panel-intro" id="rateText">per hour at list price, over the last 30 minutes</p>
+        </article>
+        <article class="panel-card gauge-card" id="ledgerCard">
+          <div class="panel-header"><h2>Savings counted</h2><span class="tag-badge good">LEDGER</span></div>
+          <div class="gauge-big" id="ledgerBig">-</div>
+          <p class="panel-intro" id="ledgerText">Counted only when an alert fired, you acted, and the cost afterwards was measured.</p>
+        </article>
+      </div>
+      <p class="panel-intro overview-note" id="planNote"></p>
+      <div class="chart-grid">
+        <article class="panel-card"><div class="panel-header"><h2>Last 24 hours</h2><span class="tag-badge good">DERIVED</span></div><div id="chart24" class="chart"></div></article>
+        <article class="panel-card"><div class="panel-header"><h2>Last 7 days</h2><span class="tag-badge good">DERIVED</span></div><div id="chart7" class="chart"></div></article>
+      </div>
+      <article class="panel-card" id="feedCard">
+        <div class="panel-header"><h2>What Sparelimit said, and what came of it</h2><span class="tag-badge" id="feedTag">LOADING</span></div>
+        <p class="panel-intro" id="feedIntro">Reading the alert log and the ledger (a few seconds)...</p>
+        <div id="feedList"></div>
+      </article>
+      <article class="panel-card" id="timelineCard">
+        <div class="panel-header"><h2>Session timeline</h2><span class="tag-badge good" id="tlTag">DERIVED</span></div>
+        <div class="tl-controls"><label for="tlSelect" class="sr-only">Session</label><select id="tlSelect" aria-label="Session"></select></div>
+        <p class="panel-intro" id="tlIntro">Pick a session to see how its conversation grew and what happened along the way.</p>
+        <div id="tlSummary"></div>
+        <div id="tlChart" class="chart tl-chart"></div>
+        <ol id="tlMoments" class="tl-moments"></ol>
+      </article>
+      <article class="panel-card" id="plannerCard" hidden>
+        <div class="panel-header"><h2>Accounts</h2><span class="tag-badge warn" id="plannerTag">ESTIMATED</span></div>
+        <p class="panel-intro" id="plannerIntro">Reading your accounts...</p>
+        <div id="plannerLines"></div>
+      </article>
+      <article class="panel-card" id="codexCard" hidden>
+        <div class="panel-header"><h2>Codex</h2><span class="tag-badge good" id="codexTag">DERIVED</span></div>
+        <p class="panel-intro" id="codexIntro">Reading your Codex sessions...</p>
+        <div id="codexLines"></div>
+      </article>
+    </section>
+
+    <!-- WHAT IT SAVES: HERO METRIC GRID -->
+    <section class="metrics-grid">
+      <div class="metric-card highlight-metric">
+        <span class="metric-label">Possible Saving, This Session</span>
+        <strong class="metric-value green-text" id="savingsValue">$0.00</strong>
+        <span class="metric-sub" id="savingsSub">if you started fresh instead of carrying on. Estimated, not counted</span>
+      </div>
+
+      <div class="metric-card">
+        <span class="metric-label">Current Session Burn</span>
+        <strong class="metric-value" id="currentCostValue">$0.00</strong>
+        <span class="metric-sub" id="tokensSub">0k tokens (0% cache re-reads)</span>
+      </div>
+
+      <div class="metric-card">
+        <span class="metric-label">Active Context Size</span>
+        <strong class="metric-value warn-text" id="contextSizeValue">0k tok</strong>
+        <span class="metric-sub" id="nextTurnCostSub">Next prompt costs ~$0.000 before code is written</span>
+      </div>
+
+      <div class="metric-card">
+        <span class="metric-label">Session Depth &amp; Churn</span>
+        <strong class="metric-value" id="depthValue">0 turns</strong>
+        <span class="metric-sub" id="churnSub">0 file writes</span>
+      </div>
+    </section>
+
+    <!-- PRE-ACTION PROMPT TESTER (BEFORE YOU HIT ENTER) -->
+    <section class="tester-card">
+      <div class="tester-header">
+        <div>
+          <h2>Check a message before you send it</h2>
+          <p class="panel-intro">Type what you are about to send to Claude Code or Cursor. It shows what the message will carry with it and writes a tighter version.</p>
+        </div>
+        <span class="tax-badge" id="promptTaxBadge">0 tok drag</span>
+      </div>
+      <div class="tester-grid">
+        <div class="tester-col">
+          <label for="userDraftInput">What you're about to send:</label>
+          <textarea id="userDraftInput" rows="3" placeholder="e.g. it's still failing on checkout! fix it please and also while you're at it make the submit button have rounded corners"></textarea>
+          <div class="tester-hints" id="draftTrapsList">
+            <span>Type a message above to check it...</span>
+          </div>
+        </div>
+        <div class="tester-col">
+          <div class="tester-result-header">
+            <label>Tighter version, ready to paste:</label>
+            <button type="button" class="btn-copy-small" id="copyCleanDraftBtn">Copy</button>
+          </div>
+          <pre class="draft-output-box" id="cleanDraftOutput"></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- LAST 7 DAYS: the weekly digest (sparelimit digest) -->
+    <section class="panel-card coach-card" id="digestCard">
+      <div class="panel-header">
+        <h2>Last 7 days</h2>
+        <span class="tag-badge" id="digestTag">LOADING</span>
+      </div>
+      <p class="panel-intro" id="digestIntro">Reading your past sessions (a few seconds)...</p>
+      <div id="digestBody"></div>
+      <p class="panel-intro coach-note" id="digestNote"></p>
+    </section>
+
+    <!-- HISTORY (sparelimit history, sparelimit drains, sparelimit files): weeks, projects, causes, unprompted spend, costliest files -->
+    <section class="panel-card coach-card" id="historyCard">
+      <div class="panel-header">
+        <h2>History, last 30 days</h2>
+        <span class="tag-badge" id="historyTag">LOADING</span>
+      </div>
+      <p class="panel-intro" id="historyIntro">Reading your past sessions (a few seconds)...</p>
+      <div id="historyBody"></div>
+      <p class="panel-intro coach-note" id="historyNote"></p>
+    </section>
+
+    <!-- WHAT TO CHANGE: ranked habits from the user's own sessions (sparelimit coach) -->
+    <section class="panel-card coach-card" id="coachCard">
+      <div class="panel-header">
+        <h2>What to change</h2>
+        <span class="tag-badge" id="coachTag">LOADING</span>
+      </div>
+      <p class="panel-intro" id="coachIntro">Reading your past sessions (a few seconds)...</p>
+      <div id="coachSavings"></div>
+      <div id="coachStake"></div>
+      <p class="panel-intro coach-note" id="coachNote"></p>
+    </section>
+
+    <!-- MAIN TWO-COLUMN WORKFLOW COCKPIT -->
+    <main class="cockpit-grid">
+      <!-- Left Column: Diagnostic Signals & Churn -->
+      <section class="panel-card">
+        <div class="panel-header">
+          <h2>This session</h2>
+          <span class="tag-badge" id="flowStatusTag">CHECKING</span>
+        </div>
+        <p class="panel-intro" id="telemetryIntro">
+          Read from your agent's own log of the active session.
+        </p>
+
+        <div class="diag-section">
+          <h3>File Churn Analysis</h3>
+          <p class="diag-help">
+            Files written &ge; 3 times in one session indicate the AI is guessing instead of identifying root cause.
+          </p>
+          <div class="chip-container" id="fileChurnChips">
+            <span class="empty-chip">No file churn detected</span>
+          </div>
+        </div>
+
+        <div class="diag-section">
+          <h3>Context Growth &amp; Warning Signals</h3>
+          <ul class="signal-list" id="signalsList">
+            <li>Scanning active transcript...</li>
+          </ul>
+        </div>
+
+        <div class="diag-section">
+          <h3>Agent Interoperability (MCP Server Active)</h3>
+          <div class="agent-bridge-box">
+            <p><strong>Your agents can query this live:</strong> Run <code>sparelimit mcp</code> or add to your MCP client config:</p>
+            <pre class="code-snippet"><code>{
+  "mcpServers": {
+    "sparelimit": {
+      "command": "sparelimit",
+      "args": ["mcp"]
+    }
+  }
+}</code></pre>
+            <p class="bridge-hint">Tools exposed: <code>sparelimit_check_guardrail</code>, <code>sparelimit_get_telemetry</code>, <code>sparelimit_request_reset</code>.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: The 1-Shot Action Engine -->
+      <section class="panel-card primary-border">
+        <div class="panel-header">
+          <h2>Start fresh with a handoff</h2>
+          <button type="button" class="btn-primary" id="copyHandoffBtn">
+            <span id="copyBtnText">Copy handoff</span>
+          </button>
+        </div>
+        <p class="panel-intro">
+          Copy this into a fresh chat. It names the files in play and the goal, and leaves the long conversation behind.
+        </p>
+
+        <pre class="handoff-box" id="handoffBox" tabindex="0"></pre>
+
+        <div class="terminal-actions-bar">
+          <h3>Quick actions</h3>
+          <div class="action-buttons-grid">
+            <button type="button" class="btn-secondary" id="createHandoffFileBtn" title="Creates .sparelimit-handoff.md and copies to clipboard">
+              💾 Save <code>.sparelimit-handoff.md</code>
+            </button>
+            <button type="button" class="btn-secondary" id="installMuzzleBtn" title="Creates .sparelimit-muzzle.sh to cap build/test output to 15 lines">
+              🔇 Install Log Muzzle
+            </button>
+            <button type="button" class="btn-secondary" id="lockScopeBtn" title="Locks file scope in .sparelimit-freeze.json">
+              🔒 Freeze File Scope
+            </button>
+            <button type="button" class="btn-secondary" id="copyRuleShieldBtn" title="Copies .cursorrules / CLAUDE.md Token Shield">
+              🛡️ Copy Token Shield
+            </button>
+          </div>
+          <div class="cli-hints">
+            <p><strong>In the terminal:</strong></p>
+            <ul>
+              <li><code>sparelimit watch</code> — live background watcher with macOS sound &amp; alerts</li>
+              <li><code>sparelimit reset</code> — write a handoff and copy it to the clipboard</li>
+              <li><code>sparelimit muzzle</code> — generate compact test output wrapper</li>
+              <li><code>sparelimit benchmark</code> — compare this session with a tight one</li>
+              <li><code>sparelimit status --json</code> — machine-readable JSON status for AI agents</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="live-session.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+{
+  "format": "sparelimit-numbers/1",
+  "as_of": "2026-11-26",
+  "scope": "one machine, one person, first weeks of use",
+  "rules_version": 1,
+  "period": "everything on that machine up to",
+  "items": [
+    {
+      "id": "alerts",
+      "text": "Alerts that fired",
+      "value": 96,
+      "unit": "alerts",
+      "label": "derived"
+    },
+    {
+      "id": "acted-on",
+      "text": "Alerts acted on",
+      "value": 3,
+      "unit": "alerts",
+      "label": "derived"
+    },
+    {
+      "id": "ignored",
+      "text": "Alerts ignored",
+      "value": 72,
+      "unit": "alerts",
+      "label": "derived"
+    },
+    {
+      "id": "acted-on-rate",
+      "text": "Acted on, out of the alerts where acting or not could be told",
+      "value": 4,
+      "unit": "percent",
+      "label": "derived"
+    },
+    {
+      "id": "counted-saving",
+      "text": "Counted saving",
+      "value": 19.56,
+      "unit": "USD at list price",
+      "label": "estimated"
+    },
+    {
+      "id": "ignored-predicted",
+      "text": "What the ignored alerts predicted, which was not saved",
+      "value": 147.59,
+      "unit": "USD at list price",
+      "label": "estimated"
+    }
+  ],
+  "breakdown": {
+    "total": 96,
+    "parts": [
+      {
+        "id": "counted",
+        "word": "counted",
+        "n": 3
+      },
+      {
+        "id": "ignored",
+        "word": "ignored",
+        "n": 72
+      },
+      {
+        "id": "unsettled",
+        "word": "unsettled",
+        "n": 18
+      },
+      {
+        "id": "pending",
+        "word": "pending",
+        "n": 2
+      },
+      {
+        "id": "stopped",
+        "word": "work stopped",
+        "n": 1
+      }
+    ],
+    "label": "derived"
+  },
+  "notCounted": [
+    {
+      "id": "ignored",
+      "n": 72,
+      "text": "you did not act on the alert, so nothing was saved"
+    },
+    {
+      "id": "stopped",
+      "n": 1,
+      "text": "work stopped after the alert; that is not counted as an effect of it"
+    },
+    {
+      "id": "no-data",
+      "n": 18,
+      "text": "the logs could not settle it (too little spending to compare, or the alert did not apply)"
+    },
+    {
+      "id": "pending",
+      "n": 2,
+      "text": "too recent to judge: the window after the alert is not over"
+    }
+  ],
+  "complaints": {
+    "value": 0,
+    "as_of": "2026-11-26",
+    "label": "exact",
+    "text": "GitHub issues titled \"Complaint:\", counted before the repository was public, when none could be filed yet"
+  }
+}

@@ -1,0 +1,48 @@
+name: CI
+# The matrix is kept small.
+# Linux covers every supported Node; macOS (the platform with the desktop-only code) runs one version.
+on:
+  push:
+    paths-ignore: ["site/**", "docs/**", "**/*.md"]
+  pull_request:
+    paths-ignore: ["site/**", "docs/**", "**/*.md"]
+
+# a newer push to the same branch makes the older run pointless
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# the tests only read the code
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        node: [20, 22, 24]
+        include:
+          - os: macos-latest
+            node: 22
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm test
+
+  typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      # a dev tool only: the runtime has no dependencies. The check is a ratchet (see scripts/typecheck.mjs).
+      - run: npm install --no-save --ignore-scripts typescript@5.6.3 @types/node@22
+      - run: npm run typecheck

@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en" data-theme="light"><head><script>try{document.documentElement.dataset.theme=localStorage.getItem("sparelimit-theme")==="dark"?"dark":"light"}catch(e){}</script><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Methodology: Sparelimit</title>
+<meta name="description" content="How Sparelimit computes every number it shows, how a saving is counted, and what each label (exact, derived, estimated) means.">
+<style>
+:root,[data-theme="light"]{color-scheme:light;--paper:#f4f7ff;--ink:#0a1230;--muted:#4a5878;--blue:#1f4bff;--line:#d5dcf2;--code:#e9eeff}
+[data-theme="dark"]{color-scheme:dark;--paper:#0a111c;--ink:#e8eef7;--muted:#93a3b8;--blue:#7b97ff;--line:#243247;--code:#142033}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.7 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:760px;margin:0 auto;padding:36px 24px 72px}
+a{color:var(--blue)} .logo{font:700 26px ui-serif,"New York",Georgia,serif;letter-spacing:-.03em;color:var(--ink);text-decoration:none}
+h1{font:700 clamp(34px,6vw,54px)/1.05 ui-serif,"New York",Georgia,serif;letter-spacing:-.03em;margin:40px 0 16px}
+h2{font:700 24px/1.3 ui-serif,"New York",Georgia,serif;margin:44px 0 8px;scroll-margin-top:16px}
+p,li{color:var(--muted)} p{margin:0 0 12px} li{margin:0 0 8px} p b,li b,td b{color:var(--ink)}
+.lead{font-size:19px;color:var(--ink)}
+nav ol{columns:2;column-gap:32px;padding-left:20px;margin:16px 0 0} nav li{break-inside:avoid;margin:0 0 4px}
+code{background:var(--code);border-radius:4px;padding:1px 5px;font:.88em ui-monospace,Menlo,monospace}
+pre{background:var(--code);border-radius:8px;padding:14px 16px;overflow-x:auto;margin:0 0 12px} pre code{background:none;padding:0}
+.tw{overflow-x:auto;margin:0 0 14px} table{border-collapse:collapse;width:100%;font-size:15px;line-height:1.55}
+th,td{border-top:1px solid var(--line);padding:9px 10px 9px 0;text-align:left;vertical-align:top;color:var(--muted)} thead th{color:var(--ink);border-top:0} tbody th{color:var(--ink);font-weight:600;padding-right:14px;white-space:nowrap}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+@media (max-width:560px){nav ol{columns:1} tbody th{white-space:normal}}
+</style></head>
+<body><main>
+<a class="logo" href="./">sparelimit.</a>
+<h1>How Sparelimit's numbers are computed</h1>
+<p class="lead">Every figure Sparelimit prints says how sure it is, and this page says how each one is worked out. It is generated from the same code that does the arithmetic, so the thresholds below cannot differ from the ones the tool uses. Where something is a guess, it is called a guess.</p>
+<nav aria-label="Sections"><ol>
+<li><a href="#read-first">Read this first</a></li>
+<li><a href="#labels">The three labels</a></li>
+<li><a href="#sources">Where the numbers come from</a></li>
+<li><a href="#crosscheck">Cross-checks, corrections, and how to reproduce them</a></li>
+<li><a href="#plan">Plan usage (the 5-hour and weekly bars)</a></li>
+<li><a href="#spend">Where the spend goes, and what could be saved</a></li>
+<li><a href="#live">What Sparelimit says while you work</a></li>
+<li><a href="#agents">Subagents and swarms</a></li>
+<li><a href="#timeline">The session timeline</a></li>
+<li><a href="#why">Why a session cost what it did</a></li>
+<li><a href="#rebuild">The reset assumption, measured</a></li>
+<li><a href="#settings">Settings, presets and budgets</a></li>
+<li><a href="#accounts">Accounts on this machine</a></li>
+<li><a href="#clients">Clients (spend by project)</a></li>
+<li><a href="#codex">Codex sessions</a></li>
+<li><a href="#models">Which model for which work</a></li>
+<li><a href="#ledger">How a saving is counted (the ledger)</a></li>
+<li><a href="#adoption">Did a habit change?</a></li>
+<li><a href="#does-not-claim">What Sparelimit does not claim</a></li>
+<li><a href="#limits">What Sparelimit cannot know</a></li>
+<li><a href="#reproduce">Reproduce any of it</a></li>
+</ol></nav>
+<section id="read-first"><h2>Read this first</h2>
+<ul>
+<li><b>Dollars are API-equivalent at list price.</b> They are what the same tokens would cost at the public API prices, not what your plan billed you. On a subscription they show size and share, not an invoice.</li>
+<li><b>The tool runs on your machine.</b> Sparelimit reads the session logs your coding agent already writes and sends nothing anywhere. Currently only Claude Code logs are read fully; Antigravity is partly supported.</li>
+<li><b>Estimates overlap.</b> The savings listed for different habits are different views of the same spend. Adding them up counts some money twice, so Sparelimit never does.</li>
+</ul>
+</section>
+<section id="labels"><h2>The three labels</h2>
+<p>Each number carries one of three labels. When a figure is built from several, the weakest label wins.</p>
+<div class="tw"><table><thead><tr><th>Label</th><th>Means</th><th>Example</th></tr></thead><tbody>
+<tr><th scope="row">exact</th><td>Reported by the agent itself, not reconstructed.</td><td>Context size and plan-limit percentages from Claude Code's status line, which its documentation says the terminal version provides. We have not yet confirmed that ourselves on a real terminal session: treat it as documented, not verified.</td></tr>
+<tr><th scope="row">derived</th><td>Computed from your logs with no assumption beyond the arithmetic.</td><td>What a session cost, how much of it was re-reading the conversation, how many subagents ran.</td></tr>
+<tr><th scope="row">estimated</th><td>Needs an assumption, a model of different behaviour, or a rough conversion.</td><td>What a fresh start would have saved; plan usage from logs; what a cheaper model would have cost.</td></tr>
+</tbody></table></div>
+</section>
+<section id="sources"><h2>Where the numbers come from</h2>
+<p><b>One response, counted once.</b> Claude Code writes one log line per content block (thinking, text, each tool call) and repeats the same token usage on every one. Adding the lines overcounts: on one real session, 105 assistant lines were 36 real responses, which overstated cache reads 2.95 times and output 3.03 times. Sparelimit keys each response by its message id and counts it once.</p>
+<p><b>Subagents are billed too.</b> They log to a <code>subagents</code> folder beside the session. Sparelimit reads those files as side threads, so their spend is not missing, and identifies each one (its file name, its type, and the call that started it). A first version that read only the main file was 11% low against ccusage; the comparison found it and it was fixed.</p>
+<p><b>Each response is priced by its own model.</b> Prices come from the LiteLLM price table, bundled as a trimmed snapshot and shown with an &quot;as of&quot; date. Sparelimit prices input, output, cache reads and cache writes (5-minute and 1-hour separately), the higher rate above a model's long-prompt threshold where one exists, and prices that change on a date. You can override any price in <code>~/.sparelimit/pricing.json</code>. On 2026-11-05 the snapshot was checked against the providers' own pricing pages for Fable 5.1, Opus 5.5, Sonnet 5.5, Haiku 5.5, Opus 4.7 and Sonnet 4.5.</p>
+<p><b>A model Sparelimit does not know is priced at a default and labelled estimated</b>, never silently.</p>
+</section>
+<section id="crosscheck"><h2>Cross-checks, corrections, and how to reproduce them</h2>
+<ul>
+<li><b>ccusage.</b> On 2026-11-05, over the same 93 Claude Code sessions, Sparelimit's total was $4,601.06 and ccusage 20.0.48 reported $4,600.87: 0.004% apart, every session within 5%. This is the author's machine only.</li>
+<li><b>CodeBurn was not reconciled.</b> It reports a different total and appears to book subagent spend under separate sessions. We could not tell which attribution is right and do not claim either.</li>
+<li><b>A retracted figure.</b> An early estimate that &quot;$85 of avoidable context&quot; could be saved was wrong: it counted only the stretch after the 95% stop, where Claude Code auto-compacts anyway, so it measured the wrong alternative. It was withdrawn and replaced by the reset model below.</li>
+<li><b>A corrected headline.</b> One Antigravity session first showed $37 because it was priced as the wrong model. Priced as the model it actually used, it was about $12. The point that survived: 96% of its tokens were cache re-reads.</li>
+</ul>
+<p>To check Sparelimit against another tool on your own logs:</p>
+<pre><code>sparelimit replay --all --json     # summary.totalCostUSD is the total over every Claude Code session
+npx ccusage@latest           # compare its total over the same period (flags differ by version)</code></pre>
+</section>
+<section id="plan"><h2>Plan usage (the 5-hour and weekly bars)</h2>
+<p>Claude Code's documentation says its status line reports these percentages in the terminal version, which would make them exact; we have not yet confirmed that on a real terminal session. In the Claude Desktop app the status line did not run when we tested, so Sparelimit estimates the percentages from your logs.</p>
+<ul>
+<li><b>Windows.</b> A 5-hour window opens at the first activity after the previous one ended, rounded down to the hour. This reproduced a real 11:00 to 16:00 window exactly. The weekly window is anchored to the reset time you give.</li>
+<li><b>Calibration.</b> You type what the app shows (<code>sparelimit calibrate</code>). Sparelimit divides the spend your logs show in that window by the percentage, and takes the median over your calibration points of 15% or more. The result is a limit in API-equivalent dollars.</li>
+<li><b>Check.</b> One out-of-sample prediction, made before the app's numbers were known and from a limit fitted on a single earlier point, gave 96% and 89%; the app showed 97% and 90%. That is one check, on one account type (Pro).</li>
+<li><b>The app's own record.</b> The Claude Desktop app keeps the five-hour and weekly percentages it showed in a file in its data folder (<code>sparelimit plan --app</code> reads it, read-only, and drops the organisation id). Those are the app's own figures, but sparse (a sample is written when the app fetches usage, so there are gaps of days) and in an undocumented format that is ignored if it changes. <code>sparelimit plan --app</code> checks Sparelimit's estimate against them, each sample estimated from a limit fitted on the others; <code>sparelimit calibrate --from-app</code> uses the samples between 15% and 95% as calibration points. 0 and 100 are clamps and are not used. The weekly figure is not imported: its resets in that file do not fall on a fixed 7 days.</li>
+<li><b>Label: estimated.</b> Other surfaces that draw on the same plan (claude.ai chat, other tools) are not in the logs, so the real figure may be higher. By default an estimate warns but never blocks.</li>
+</ul>
+</section>
+<section id="spend"><h2>Where the spend goes, and what could be saved</h2>
+<p><code>sparelimit replay</code> runs the policy over past sessions and breaks down the bill. These are <b>derived</b> from the logs: re-sending the conversation on every message, adding new content, what the model writes, and the fixed starting context (the smallest context seen in the session, re-read on every message).</p>
+<p>The levers below are <b>estimated</b>. They overlap, and none of them is a promise.</p>
+<div class="tw"><table><thead><tr><th>Lever</th><th>How it is worked out</th><th>Assumptions that matter</th></tr></thead><tbody>
+<tr><th scope="row">Start fresh at 60% of the window</th><td>Per session, the cost of re-reading the conversation as it really grew, against the cost if it had been reset at 60%: the rebuilt context is written once and the model writes a summary of 3,000 tokens. Growth per response comes from the log; after a reset the context is the median level seen after real auto-compactions (20% of the window if there was none).</td><td>Files re-read after a reset: 25k tokens, shown as a range from 0k to 60k. A drop of 35% or more in one step counts as a real compaction. Only sessions of 30+ messages are modelled.</td></tr>
+<tr><th scope="row">Do not resume after a break</th><td>A response whose context is 50k+ tokens, after a gap longer than the cache lifetime (5 minutes, or 1 hour if the log shows 1-hour caching), with under 20% of it read from cache. Cost = the whole context at the cache-write price. A fresh start = the starting context + 4k handoff + 25k re-read, at the same price.</td><td>Counted only if resuming cost at least $0.50 more than a warm cache. The resume cost is derived; the fresh-start cost is estimated.</td></tr>
+<tr><th scope="row">Hand verbose output to a subagent</th><td>Tool results of 5,000+ tokens kept in the conversation, priced as written once and re-read until the next compaction, less a 1,000-token answer in their place, less one subagent's median measured cost per session.</td><td>Sizes are measured in characters at about 3.7 per token. Never negative: when it does not pay, it says 0.</td></tr>
+<tr><th scope="row">Cheaper model for low-risk work</th><td>Each response on Opus or Fable is priced again on the next tier down (Opus on Sonnet 5.5, Fable on Opus 5.5) with the same tokens.</td><td>Quality is not measured (see below). A plan limit may weigh models differently from list prices.</td></tr>
+</tbody></table></div>
+</section>
+<section id="live"><h2>What Sparelimit says while you work</h2>
+<p>These come from hooks that run on your own prompts. A hook never builds a report; it reads a small cache and answers in milliseconds.</p>
+<ul>
+<li><b>Context warning at 60%, stop at 95%</b> of the window. This needs the context figure from the status line; where that does not run (the Desktop app), only the reset coach below speaks, reading the context from the transcript, and it advises without stopping anything.</li>
+<li><b>Break advisor.</b> If the cache has gone cold on a conversation of 50k+ tokens and resuming would cost at least $0.50 more than a warm cache, it says what resuming costs against a fresh start.</li>
+<li><b>Reset coach.</b> From 60% of the window with a warm cache: the saving is the messages left before auto-compaction (about 95% of the window, at the median growth in the log, at most 100) times (current context minus a fresh start of the starting context + 4k handoff + 25k re-read) at the cache-read price. It stays quiet below $0.25. A 1,000,000-token window is assumed only once a conversation has passed 200,000. <b>Estimated.</b></li>
+<li><b>Loops.</b> Live, the same tool call repeated back to back warns at 4 and stops at 8; the live hook does not see the results. In a replay, which does, a &quot;no progress&quot; loop (same call and same result) uses the same numbers (4 and 8), and repeats whose results differ are not loops.</li>
+<li><b>Dollar budgets</b> warn at $20 per session and never block by default: on 93 real sessions a lower cap fired on almost every long session.</li>
+</ul>
+</section>
+<section id="agents"><h2>Subagents and swarms</h2>
+<p>Per subagent, <b>derived</b> from its log: cost, the context it started with, the size of the answer it handed back (from the result of the call that started it), and how many ran at once.</p>
+<ul>
+<li><b>Swarm:</b> 4+ running at once or 8+ in a session, <b>and</b> subagents are at least 10% of that session's spend.</li>
+<li><b>Heavy:</b> no swarm, but subagents are at least 40% of the session's spend. Otherwise <b>ok</b>.</li>
+<li>The verdict describes cost and shape. Whether a swarm was worth it depends on what it produced, which a log cannot show.</li>
+</ul>
+</section>
+<section id="timeline"><h2>The session timeline</h2>
+<p><code>sparelimit timeline</code> and the local dashboard draw one session: the context as a share of the window at each response, the cumulative cost below it, and numbered moments. The horizontal axis is the response number, not the clock, so a session that spans days stays readable; pauses of 60 minutes or more are shaded. Everything is <b>derived</b> from the log, except the one figure labelled <b>estimated</b>.</p>
+<ul>
+<li><b>Window levels.</b> The first response where the context reaches 60% of the window, and where it reaches 95%, in each climb. A climb ends when the context shrinks, or falls 5 points below the warning level.</li>
+<li><b>Shrinks.</b> The context falls by 35% or more from one response to the next. The log cannot tell a /compact from an auto-compaction or a /clear, so the moment says only that it shrank. Each shrink also shows a <b>measured</b> before/after: the mean cost per response over the 10 responses before it against the next 30 after (cut at the next shrink; shown only with at least 5 before and 10 after). It is a comparison, not proof of a saving: the work after may differ from the work before.</li>
+<li><b>Cold returns.</b> A response that processed the whole conversation again after a break longer than the cache lifetime: the same rule as the break advisor, with the gap and the extra cost.</li>
+<li><b>Loops.</b> Where the replay's loop rules fired: the same call repeated, and the same call with the same result.</li>
+<li><b>Rewrite loops and failing repeats</b> (<code>sparelimit why</code>, derived). A file edited 4 or more times with each edit within 25 responses of the one before; the same command, with identical input, failing 3 or more times in a session. The dollars are the responses that made the later repeats (a response with several calls is shared between them). They show what the repeats rode on, not a saving: some of those edits were needed, and the first edit or failure is not counted.</li>
+<li><b>Error floods.</b> 3 or more tool calls that the tool reported as errors within 5 consecutive responses. One bad patch is one moment, placed on its first failure; the next needs 20 responses without a flood.</li>
+<li><b>Swarms.</b> 4 or more subagents running at the same time, judged by the time span of each subagent's responses.</li>
+<li><b>What Sparelimit said.</b> Every alert or nudge shown in that session, from the audit log; the same rule within 30 minutes is one moment.</li>
+</ul>
+<p>The summary gives the share of responses, and of spend, at or above the warning level (derived), and the replay's estimate of starting fresh at 60% for that session (estimated, see the levers above). The window is taken as 200,000 tokens unless the conversation passed that, then the model's maximum, as in the replay; a wrong assumption moves the percentages, not the dollars. The dashboard runs on your machine only, asks for a session by its id, and shows the project's folder name, never a full path.</p>
+</section>
+<section id="why"><h2>Why a session cost what it did</h2>
+<p><code>sparelimit why</code> ranks the causes that cost one session the most, each with its dollars and its share of the session's spend. It is built only from the session replay, so every figure traces to <code>sparelimit replay</code>. A cause is listed only if it is at least 1% of the session's spend.</p>
+<ul>
+<li><b>Avoidable</b> rows are a modelled change in behaviour, so they are <b>estimated</b>: starting fresh at 60% of the window instead of letting the conversation grow (the same model as the earlier-reset figure), and the spend on responses that repeated a call the loop rules had flagged (<b>derived</b>).</li>
+<li><b>At stake</b> rows are spend in an area, an upper bound on what could be saved there and not a saving: coming back after the cache expired (the extra over a warm cache, <b>derived</b>), the fixed starting context (<b>derived</b>), subagents (their total cost, <b>derived</b>), files read again with an identical result and large tool outputs kept in the conversation (what they cost to carry, <b>estimated</b>, because sizes are measured in characters).</li>
+<li><b>The causes overlap.</b> A large context makes re-reads and cold returns dearer too. So they are never added up and no total is shown.</li>
+</ul>
+</section>
+<section id="rebuild"><h2>The reset assumption, measured</h2>
+<p>The earlier-reset estimate assumes 25k tokens are re-read after a reset (files read again). <code>sparelimit rebuild</code> measures what the logs show after the shrinks that really happened (a /compact, an auto-compaction or a /clear inside one session, with at least 10 responses after it), over the next 10 responses.</p>
+<ul>
+<li><b>Files read again.</b> The size of Read results for files already read earlier in the session. Sizes are in characters, about 3.7 per token.</li>
+<li><b>Upper bounds.</b> The size of all tool output in those responses, and how much the context grew over them. New work is in both, so they overshoot what is rebuilt.</li>
+<li><b>It is a proxy.</b> A compaction keeps a summary of the work; a fresh start with a short handoff keeps less, so it probably re-reads more. The assumption is not replaced until there are at least 10 measured fresh-start handoffs.</li>
+</ul>
+</section>
+<section id="settings"><h2>Settings, presets and budgets</h2>
+<p>Settings live in <code>~/.sparelimit/config.json</code> and, per project, in <code>.sparelimit/config.json</code> in the project folder. A project folder can be something you downloaded, so its file may only make a check stricter: a lower limit or an earlier warning. It cannot switch a warning off, raise a limit, ignore a rule, change what your agent reads, change your playbooks or add folders to read. Every value is checked: a number or null where a threshold goes, a known preset name, a list of rule names to ignore. A value of the wrong type is dropped, never read as &quot;off&quot;, so a typo cannot switch a guard off.</p>
+<ul>
+<li><b>Presets</b> (<code>sparelimit policy</code>) are starting points, not measured optima: round figures for a kind of day. <code>agency-day</code> warns at $10 an hour and stops at $30. <code>weekly-pace</code> warns when the weekly quota is used 7 points faster than the week has gone (day 3 of 7 is 43%, so more than 50%), once a seventh of the week has passed. <code>steady</code> is both, with the context warning at 50%. Your own values always win over a preset. Tune them against <code>sparelimit replay</code> on your own sessions.</li>
+<li><b>Budgets</b> (<code>sparelimit budget</code>) compare spend today, this week and this month with limits you set. The periods are the local calendar: midnight, Monday midnight, the 1st. Dollars are API-equivalent at list price (<b>derived</b>), so on a subscription a budget is a pace limit, not a bill. <code>sparelimit budget --check</code> exits 1 when any budget is over, for scripts and CI.</li>
+<li><b>Scope freeze</b> (<code>sparelimit freeze</code>) lists the files the work is about, and the hook then refuses edits to any other file (Edit, Write, MultiEdit, NotebookEdit; a shell command is not guessed at). It applies only in the project folder that holds <code>.sparelimit-freeze.json</code>, expires after 8 hours so a forgotten lock cannot strand anyone, and is lifted by <code>sparelimit freeze --off</code> or by <code>sparelimit allow</code>. A path the hook cannot read from the call is allowed: a guard must never block on a guess.</li>
+<li><b>Ignored rules</b> (<code>ignore.rules</code>) silence a rule by name, in the hook only. Replays and reports still show it.</li>
+</ul>
+</section>
+<section id="accounts"><h2>Accounts on this machine</h2>
+<p><code>sparelimit accounts</code> shows spend by Claude account. People with more than one account usually keep a config folder for each (selected with <code>CLAUDE_CONFIG_DIR</code>: <code>~/.claude</code>, <code>~/.claude-work</code>, ...), and each folder has its own <code>projects/</code> logs and its own signed-in account. So a session belongs to the account of the config folder its log is in, which needs no guessing.</p>
+<ul>
+<li><b>Folders considered:</b> <code>~/.claude</code>, <code>CLAUDE_CONFIG_DIR</code>, any <code>~/.claude-*</code> folder that has a <code>projects</code> folder, and folders you add with <code>sparelimit accounts add-dir</code>. Spend and sessions are <b>derived</b> from the logs (dollars at list price).</li>
+<li><b>What is read of an account:</b> a hash of the account or organisation id, the organisation name and the plan type. The email is never read, and an organisation named after an email address is shown as &quot;personal&quot;. <code>sparelimit accounts label &lt;folder or id&gt; &quot;Client A&quot;</code> names one; your name wins.</li>
+<li><b>Agent-mode sessions</b> (Claude Desktop) record no account inside their logs, but the folder they are kept in is named after the signed-in account (an observation on one machine, not documented by the app). When that account is the one a config folder holds, they are counted as that account's; when it is another, they are listed as their own Desktop account; any other layout is listed apart. A folder with no account file is shown as unknown, never as the default account.</li>
+<li><b>Plan usage is per account.</b> Each account has its own 5-hour and weekly limits, so each has its own calibration and its own spend. The current account is the one this shell uses (<code>CLAUDE_CONFIG_DIR</code> if it is set, else the default folder), which is also what a hook sees, so it lands on the right account without being told. <code>sparelimit calibrate --account=&lt;name | folder | id start&gt;</code> and <code>sparelimit plan --account=...</code> pick another one; <code>sparelimit plan --accounts</code> shows them all and says which has the most headroom, and warns before switching into one that is near its limit (<b>estimated</b>). A calibration point for a non-default account is tagged with its folder; the default folder's points carry no tag, as before accounts existed, so nothing recorded earlier changes. Desktop agent-mode sessions count for the account their folder names; one whose path names no account counts toward the default account only, which is an assumption.</li>
+<li><b>Limits:</b> the use of an account from claude.ai chat or another machine is in no log. The folder discovery and the attribution were tested on built folders: the author's machine has one config folder and one account, so a second real account has not been seen.</li>
+</ul>
+</section>
+<section id="clients"><h2>Clients (spend by project)</h2>
+<p><code>sparelimit clients</code> groups sessions by the client they were for, with rules you write: a project folder, or text in a folder name, mapped to a label. The first rule that matches wins, and sessions no rule matches are <b>Unassigned</b>, with their largest projects listed so the next rule is easy to write. Spend is <b>derived</b> from the logs (dollars at list price).</p>
+<ul>
+<li><b>Matching is on the folder's logged name.</b> Claude Code names a project's log folder after its working directory with every character that is not a letter or digit turned into a dash, so a path rule also matches a folder whose name merely starts the same way (<code>/x/Acme</code> also matches <code>/x/Acme-site</code>); the encoded forms cannot be told apart. Text rules are not case-sensitive.</li>
+<li><b>Settings</b> are global (<code>~/.sparelimit/config.json</code>) and per project (<code>.sparelimit/config.json</code>); a project's own rules come first. Rules are checked: a path must be absolute, text at least two characters, a name one to sixty.</li>
+<li><b>The client report</b> (<code>sparelimit report --client &quot;Acme&quot; [--days=30] [--hide-projects]</code>) writes one self-contained page for a client: total, working sessions, spend by week (a chart), by project and by agent (Claude Code and Codex). It has no prompts, no paths, no scripts and no external resources, and everything from the logs is escaped. Print it to PDF from a browser to send it. Claude Code sessions are matched to the client by the folder name Claude Code logs, Codex sessions by the working directory they record, using the same rules. A Codex subagent's spend is the client's, but a subagent is part of a conversation, not a session of its own. Weeks start on Monday (UTC); <code>--hide-projects</code> leaves project names out as well.</li>
+<li><b>Client budgets</b> (<code>sparelimit clients budget &quot;Acme&quot; daily=20 weekly=100 monthly=400</code>, <code>sparelimit clients --check</code>) compare each client's spend today, this week (from Monday) and this month (from the 1st), on the local calendar, with the limits you set. Claude Code and Codex spend count together; a session no rule matches belongs to no client and has no budget. <code>--check</code> exits 1 when any client is over, for scripts and CI. The client report shows the budget only if you ask (<code>--with-budget</code>): a budget is often an internal number. On a subscription a budget is a pace limit, not a bill.</li>
+<li><b>What it is not:</b> an invoice. On a subscription the dollars show how much of the plan a client's work used, at list price, not what anyone was billed.</li>
+</ul>
+</section>
+<section id="codex"><h2>Codex sessions</h2>
+<p><code>sparelimit codex</code> reads Codex CLI sessions from <code>~/.codex/sessions</code> (plain JSONL; the compressed archive is not read, to keep Sparelimit free of dependencies) and shows what they cost. The format was checked on 150 real sessions from Codex CLI 0.165.</p>
+<ul>
+<li><b>Tokens are exact</b> as the log reports them. One usage record is written per API response, with its own id, so a response is counted once. Where a file has no such record, the running token counts are used instead, ignoring a count that did not change. The two agree exactly in most files; in the others the per-response records are slightly larger, which is why they are preferred.</li>
+<li><b>Input includes the cached part</b>, so the uncached input is the difference. Output includes the model's reasoning. A separate cache-write figure was zero in every event seen; if it ever appears it is treated as part of the input, which is an assumption.</li>
+<li><b>Dollars are derived</b>: those tokens at list price, by the model of each response. A model that is not in the price list is priced at a default and counted separately as <b>estimated</b>; the command shows how much.</li>
+<li><b>Plan limits</b> (5-hour and weekly percent used) are what Codex itself writes in its log, so they are <b>exact</b>, as of the time shown. They are not live: they are the last reading in the newest session.</li>
+<li><b>Forecast</b> (<b>estimated</b>): where the 5-hour and weekly limits are heading. The 5-hour pace is taken from the last 30 minutes of the current window, from the running maximum of the readings: the percentages are account-wide and several sessions report their own, slightly different, snapshots, so a lower number later in time is an older snapshot, not a reset. With no recent reading, and always for the week, the window average is used, and it is not used before a fifth of the window has passed (a burst at the start of a week says nothing about the week). Once a window has reset since the last reading, nothing is forecast.</li>
+<li><b>The coaching views are not applied to Codex</b> (when to reset, cold-cache returns, which model to use). Their rules are Claude's: its cache lifetime and its model families. Applying them to Codex would produce numbers with nothing behind them.</li>
+<li><b>Subagents are grouped under the conversation that started them.</b> Codex writes each subagent as a session of its own that names its parent; on 155 real sessions all 134 subagents had their parent present, up to two levels deep. A conversation's cost includes its subagents (and theirs); a subagent whose parent is not in the logs counts as a conversation of its own. The command shows how many subagents ran, what they cost, and the widest fan-out (<b>derived</b>).</li>
+<li><b>Limits.</b> Files touched are not extracted, and Codex dollars have not been checked against a bill.</li>
+</ul>
+</section>
+<section id="models"><h2>Which model for which work</h2>
+<p>Each response on an expensive model is put in a type by what it did, because that is what a log shows. How hard the thinking was is invisible, so the risk tiers are a <b>rule of thumb, not a measurement</b>:</p>
+<div class="tw"><table><thead><tr><th>Risk</th><th>Types of work</th></tr></thead><tbody>
+<tr><th scope="row">low</th><td>run, explore, mcp: the model mostly chooses what to run or read next</td></tr>
+<tr><th scope="row">medium</th><td>edit, mixed, delegate: a wrong edit costs rework</td></tr>
+<tr><th scope="row">high</th><td>think: responses with no tool call (planning, deciding)</td></tr>
+</tbody></table></div>
+<p>Beside the saving, Sparelimit shows how often tool calls failed on each model in your own history. That is a rough signal and not like for like: harder work may have gone to the stronger model. The way to settle it is to move one kind of work for a week and compare retries.</p>
+</section>
+<section id="ledger"><h2>How a saving is counted (the ledger)</h2>
+<p>A saving is <b>counted</b> only when all three hold: an alert fired (it is in the audit log), you acted (visible in the logs afterwards), and a comparable cost was measured on the other side. Everything else is listed but not counted.</p>
+<div class="tw"><table><thead><tr><th>Alert</th><th>Counts when you...</th><th>Saving</th></tr></thead><tbody>
+<tr><th scope="row">Context reset (coach nudge or status-line warning)</th><td>shrank the conversation by 35% or more within 15 responses (e.g. /compact), or started a new conversation in the same project within 60 minutes with a start at most half as large.</td><td>Mean cost per response in the 10 before, minus the mean over the next 30 after (at least 10), times those responses.</td></tr>
+<tr><th scope="row">Cold cache</th><td>started a new conversation within 45 minutes instead of resuming, with no cold-cache response in the 5 minutes after the alert.</td><td>What resuming would have cost (tokens times price, from the alert) minus the measured cost of the new conversation's first 3 responses.</td></tr>
+<tr><th scope="row">Plan limit (all sessions together)</th><td>slowed to 70% or less of the previous 30 minutes' spend, and kept working (5+ responses).</td><td>The difference over those 30 minutes. It assumes the earlier pace would have continued.</td></tr>
+</tbody></table></div>
+<ul>
+<li>Repeated alerts within 30 minutes are one intervention.</li>
+<li>A plan-limit saving that overlaps a counted reset or cold-cache saving is not counted twice.</li>
+<li><b>Counted savings can be negative.</b> If the cost went up afterwards, the ledger shows that.</li>
+<li>Work that simply stops after an alert is not credited to the alert. Ignored alerts show what they predicted, and that money was not saved.</li>
+<li>An alert is <i>pending</i> until its window is over, and <i>no data</i> if the logs cannot settle it. Loop stops and budget alerts are not in the ledger yet.</li>
+</ul>
+</section>
+<section id="adoption"><h2>Did a habit change?</h2>
+<p>Each habit is tracked by one behaviour that logs can show, measured as a <b>rate</b> so a busier week does not look like a worse habit.</p>
+<div class="tw"><table><thead><tr><th>Habit</th><th>Behaviour measured</th><th>Smallest change that counts</th></tr></thead><tbody>
+<tr><th scope="row">reset-early</th><td>% of responses sent at 60%+ of the context window</td><td>2 points</td></tr>
+<tr><th scope="row">no-cold-resume</th><td>cold-cache returns per 100 responses</td><td>0.2 per 100</td></tr>
+<tr><th scope="row">model-low-risk</th><td>% of low-risk work (commands, exploring, driving tools) that ran on Opus or Fable</td><td>5 points</td></tr>
+<tr><th scope="row">subagents</th><td>% of spend that went to subagents</td><td>2 points</td></tr>
+<tr><th scope="row">start-context</th><td>tokens of starting context (median per new session)</td><td>5,000 tokens</td></tr>
+</tbody></table></div>
+<p>The start date is the one you declare with <code>sparelimit adopt</code>, else the first time the coach nudged about the habit, else the last 14 days are compared with the 14 before. Both periods need at least 50 responses, and a change must be at least 25% relative and at least the amount above. The verdicts are improved, worse, no clear change, too early (under 7 days) and not enough data.</p>
+<p><b>&quot;Improved&quot; means the behaviour moved the right way, not that the habit caused it.</b> The work differs between periods, so cost per 100 responses is shown beside the behaviour, and it can rise while the habit improves.</p>
+</section>
+<section id="does-not-claim"><h2>What Sparelimit does not claim</h2>
+<ul>
+<li><b>A saving shown is not proof of cause.</b> A counted saving means an alert fired, you acted, and the cost measured afterwards was lower. It does not show that the alert is why you acted, or that the fall in cost is because of the alert. The two stretches of work compared may not be alike. The ledger says so itself: whether the alert was the reason is not known.</li>
+<li><b>The rules and thresholds are the author's choices.</b> The author wrote the ledger's rules and chose its numbers (for example 70% of the earlier spend, and 30 minutes). They were not derived from a study or from other people's data. They are public and versioned in docs/RULES.md, so you can read them and re-run them on your own data; a change to any of them is a new version, never an edit of an old one.</li>
+<li><b>The plan-limit method assumes the earlier pace would have continued.</b> It compares the 30 minutes after an alert with the 30 before and credits the difference, which assumes you would have kept spending at the earlier pace. On the author's machine, as of 2026-11-26, all three counted savings (USD 19.56 at list price) come from this method, so the headline figure rests on the weakest assumption in the ledger.</li>
+<li><b>On a subscription a saving is limit kept, not cash.</b> Dollars are API-equivalent at list price. They show how much of your limit was used, not what you were billed. Only someone billed by usage keeps cash.</li>
+<li><b>Every published number is one machine, one person, the first weeks of use.</b> The figures on the product page and the card are the author's own. They are not a forecast for you and not from other people. Most alerts were ignored, which is why the counted saving is small.</li>
+<li><b>Modelled savings are models.</b> The &quot;could save&quot; figures in replay, the coach and the card (for example about 11% if every long session had been reset at 60%) assume you would have acted and that the restart would have been clean. They are labelled estimated, and they are not in the ledger.</li>
+</ul>
+</section>
+<section id="limits"><h2>What Sparelimit cannot know</h2>
+<ul>
+<li>Whether the cheaper model, the shorter conversation or the smaller swarm gave a worse result. Quality is not in a log.</li>
+<li>Your real bill or plan percentage in the Desktop app, except by estimate from your logs and your calibration.</li>
+<li>Use of the same plan from claude.ai chat or other machines.</li>
+<li>Sessions Claude Desktop runs in agent mode (Cowork). Sparelimit reads them from the app's own folder, as it reads Claude Code's, and counts them toward spend and the plan estimate. The folder layout is the app's own and was checked on macOS only. Chat in claude.ai and use on other machines are still not in any log Sparelimit can read.</li>
+<li>Every secret in your text. Before a handoff, a status file or an export carries your last request or a failed command, Sparelimit hides the shapes of well-known credentials (13 kinds: private keys, Anthropic, OpenAI-style, Stripe, GitHub, AWS, Google, Slack and npm keys, JSON web tokens, bearer tokens, passwords in URLs, and name = value assignments such as api_key=...). A secret with no known shape, such as a plain password in a sentence, is not found. Prompt text is also left out of those files by default (<code>SPARELIMIT_SHOW_PROMPTS=1</code> opts in).</li>
+<li>Why you stepped away, or whether a pause was a break or a reaction to an alert. That is why work that stops is not credited to an alert.</li>
+<li>Anything on an account type or agent it has not been checked on. The price and total checks so far are one Pro account and Claude Code; Codex tokens are as its log reports them and its dollars have not been checked against a bill.</li>
+</ul>
+</section>
+<section id="reproduce"><h2>Reproduce any of it</h2>
+<pre><code>sparelimit replay --all     # the spend breakdown and the levers
+sparelimit coach            # what to change, ranked
+sparelimit delegate         # subagents and swarms
+sparelimit models           # model what-ifs and your failure rates
+sparelimit plan             # estimated plan usage
+sparelimit track            # did a habit change?
+sparelimit ledger           # savings counted so far
+sparelimit method           # this page, in your terminal
+# add --json to most of them for the raw numbers</code></pre>
+</section>
+<p style="margin-top:44px">Last generated from the code on 2026-11-05. <a href="./">Back to the site</a> &middot; <a href="privacy.html">Privacy</a></p>
+</main></body></html>
