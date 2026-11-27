@@ -7,7 +7,7 @@ const dim = (/** @type {string} */ s) => (tty ? `\x1b[2m${s}\x1b[0m` : s);
 
 /** The first five: what a new user runs, in order. */
 export const START = [
-  ["sparelimit replay --all", "Where your limit went, across every past session"],
+  ["sparelimit replay --all", "Where your limit went, across every past Claude Code session"],
   ["sparelimit card", "The same as a picture and a page you can share (no prompts or paths)"],
   ["sparelimit coach", "The three habits that cost you the most, ranked"],
   ["sparelimit init --apply", "Warn me while I work, before I am cut off"],

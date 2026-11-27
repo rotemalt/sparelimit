@@ -36,7 +36,7 @@ sparelimit count off
 Five commands cover most of it. The first two need no setup: they read the logs you already have.
 
 ```bash
-sparelimit replay --all    # where your limit went, across every past session
+sparelimit replay --all    # where your limit went, across every past Claude Code session
 sparelimit card            # the same as a picture and a page you can share (no prompts or paths)
 sparelimit coach           # the three habits that cost you the most, ranked
 sparelimit init --apply    # warn me while I work, before I am cut off

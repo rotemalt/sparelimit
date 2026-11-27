@@ -16,7 +16,7 @@ import { buildHabitCard } from "../habits.mjs";
 import { buildLedger } from "../ledger.mjs";
 import { SUMMARY_DAYS, readWeek, renderWeekText } from "../week.mjs";
 import { clearDigestLock, writeDigest } from "../digestcache.mjs";
-import { isClaudeLog } from "../sources.mjs";
+import { codexSessionFiles, isClaudeLog } from "../sources.mjs";
 
 import { computeDigest, computeHabitCard, discoverTranscripts, listClaudeSessions, readAuditRows, replayAll, timelineFor } from "../transcripts.mjs";
 import { fitLimits, loadCalibration } from "../planestimate.mjs";
@@ -52,9 +52,10 @@ export const commands = {
       return;
     }
     const usd = (/** @type {number} */ n) => `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    console.log(`\n⚡ SPARELIMIT REPLAY: what the guard would have said on your past sessions`);
+    console.log(`\n⚡ SPARELIMIT REPLAY: what the guard would have said on your past Claude Code sessions`);
     console.log(`──────────────────────────────────────────────────────────────`);
     console.log(`${summary.sessions} sessions · ${usd(summary.totalCostUSD)} at list price [derived]`);
+    if (!file && codexSessionFiles().length) console.log(`Codex sessions are not in these figures: run \`sparelimit codex\` for them.`);
     console.log(`${summary.sessionsWithWarning} would have got a warning · ${summary.sessionsWithStop} would have been stopped`);
     console.log(`Spent after the first stop:      ${usd(summary.spendAfterFirstStopUSD)} [derived: money spent later in those sessions, not savings]`);
     console.log(`  of which stuck repeats:        ${usd(summary.avoidableRepeatedCallsUSD)} [derived: same call, same result, 8+ times]`);

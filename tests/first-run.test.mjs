@@ -28,3 +28,18 @@ test("the empty-state line names the folder it looked in, in the machine's own p
   assert.ok(noLogsMessage({ home: "C:\\Users\\dana" }).includes(".claude"));
   assert.ok(noLogsMessage().split("\n").length <= 4, "four short lines at most");
 });
+
+test("replay says it covers Claude Code only, and points to the codex command when Codex logs exist", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "sparelimit-both-"));
+  const log = (/** @type {string} */ file, /** @type {any} */ line) => {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, `${JSON.stringify(line)}\n`);
+  };
+  log(path.join(dir, ".claude", "projects", "demo", "s1.jsonl"), { type: "assistant", sessionId: "s1", timestamp: "2026-01-01T00:00:00Z", message: { id: "m1", model: "claude-sonnet-5-5", usage: { input_tokens: 10, output_tokens: 10 } } });
+  const replay = (/** @type {string} */ codexHome) => spawnSync(process.execPath, [path.join(ROOT, "sparelimit.mjs"), "replay", "--all"], { encoding: "utf8", timeout: 60000, env: { ...process.env, HOME: dir, USERPROFILE: dir, SPARELIMIT_HOME: path.join(dir, ".sparelimit"), SPARELIMIT_NO_CACHE: "1", SPARELIMIT_NO_REFRESH: "1", CLAUDE_CONFIG_DIR: "", CODEX_HOME: codexHome } }).stdout;
+  const without = replay(path.join(dir, "no-codex"));
+  assert.match(without, /past Claude Code sessions/);
+  assert.doesNotMatch(without, /sparelimit codex/);
+  log(path.join(dir, "codex", "sessions", "2026", "01", "01", "rollout-x.jsonl"), {});
+  assert.match(replay(path.join(dir, "codex")), /Codex sessions are not in these figures: run `sparelimit codex`/);
+});
